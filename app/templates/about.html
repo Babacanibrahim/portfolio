@@ -1,0 +1,69 @@
+{% extends "layout.html" %}
+
+{% block title %}Hakkımda - Portföy{% endblock %}
+
+{% block head %}
+<style>
+  .about-card {
+    border-radius: 1rem;
+    background: #f8f9fa;
+  }
+  .profile-img {
+    max-width: 250px;
+    border-radius: 50%;
+    border: 5px solid #0d6efd; /* Bootstrap primary rengi */
+    box-shadow: 0 4px 15px rgba(13, 110, 253, 0.3);
+  }
+  .about-header {
+    border-bottom: 3px solid #0d6efd;
+    padding-bottom: 0.3rem;
+    margin-bottom: 1.5rem;
+  }
+  .social-icons a {
+    color: #0d6efd;
+    font-size: 1.5rem;
+    margin-right: 1rem;
+    transition: color 0.3s ease;
+  }
+  .social-icons a:hover {
+    color: #084298;
+    text-decoration: none;
+  }
+  .btn-contact {
+    background: linear-gradient(45deg, #0d6efd, #6610f2);
+    border: none;
+  }
+  .btn-contact:hover {
+    background: linear-gradient(45deg, #6610f2, #0d6efd);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="card about-card shadow-sm p-5">
+  <h1 class="about-header">Hakkımda</h1>
+
+  <div class="row align-items-center gy-4">
+    <div class="col-md-4 text-center">
+      <img src="{{ url_for('static', filename='images/profile.jpg') }}" alt="Profil Fotoğrafı" class="profile-img img-fluid">
+    </div>
+    <div class="col-md-8">
+      <p>Merhaba! Ben <strong>İbrahim Babacan</strong>, bilgisayar mühendisliği 4.sınıf öğrencisiyim ve yazılım geliştirmeye büyük bir tutku ile bağlıyım. Projelerimle sürekli kendimi geliştirmeye ve yeni teknolojiler öğrenmeye çalışıyorum.</p>
+      <p>Bu portföy sitesi, yaptığım projeleri sergilemek ve yeteneklerimi paylaşmak amacıyla oluşturuldu. Frontend, backend, veri tabanı yönetimi gibi alanlarda çalışmalar yapıyorum.</p>
+      <p>Boş zamanlarımda kitap okumak, açık kaynak projelere katkıda bulunmak ve yeni programlama dillerini keşfetmekten keyif alıyorum.</p>
+
+      <div class="d-flex align-items-center gap-3 mt-4">
+        <a href="mailto:babacan-1907@outlook.com.tr" class="btn btn-contact btn-lg px-4">İletişime Geç</a>
+
+        <div class="social-icons">
+          <a href="https://github.com/Babacanibrahim" target="_blank" title="GitHub"><i class="bi bi-github"></i></a>
+          <a href="https://www.linkedin.com/in/20ibrahimbabacan20/" target="_blank" title="LinkedIn"><i class="bi bi-linkedin"></i></a>  
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Bootstrap Icons CDN -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+{% endblock %}
