@@ -1,1 +1,31 @@
 {% extends "layout.html" %}
+{% block title %}Ana Sayfa{% endblock title %}
+
+{% block body %}
+{% if projects %}
+{% for project in projects %}
+<div class="card mb-3 shadow-sm">
+  {% if project.image %}
+  <a href="{{url_for ('project_detail', id = project.id)}}"><img src="{{ url_for('static', filename='uploads/' + project.image) }}" class="card-img-top"
+    alt="{{ project.title }}"></a>
+  
+  {% else %}
+  <a href="{{url_for ('project_detail', id = project.id)}}"><img src="{{ url_for('static', filename='images/default_project.jpg') }}" class="card-img-top"
+    alt="Varsayılan Proje Görseli"></a>
+  
+  {% endif %}
+  <div class="card-body">
+  <a href="{{url_for ('project_detail', id = project.id)}}"><h5 class="card-title">{{ project.title }}</h5></a>
+    
+    <p class="card-text">
+      {{ project.description | striptags | truncate(150, True, '...') }}
+    </p>
+
+    <p class="card-text"><small class="text-muted">{{ project.created_at.strftime('%d %b %Y, %H:%M') }} tarihinde eklendi</small></p>
+  </div>
+</div>
+{% endfor %}
+{% else %}
+<p class="text-center mt-4">Henüz hiç proje eklenmemiş.</p>
+{% endif %}
+{% endblock body %}

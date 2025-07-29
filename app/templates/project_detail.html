@@ -1,0 +1,28 @@
+{% extends "layout.html" %}
+{% block title %}Proje Detayları{% endblock title %}
+
+{% block body %}
+{% if project %}
+
+<div class="card mb-3 shadow-sm">
+  {% if project.image %}
+  <img src="{{ url_for('static', filename='uploads/' + project.image) }}" class="card-img-top"
+    alt="{{ project.title }}">
+  {% else %}
+  <img src="{{ url_for('static', filename='images/default_project.jpg') }}" class="card-img-top"
+    alt="Varsayılan Proje Görseli">
+  {% endif %}
+  <div class="card-body">
+    <h5 class="card-title">{{ project.title }}</h5>
+    <p class="card-text">
+      {{ project.description |safe }}
+    </p>
+
+    <p class="card-text"><small class="text-muted">{{ project.created_at.strftime('%d %b %Y, %H:%M') }}</small></p>
+  </div>
+</div>
+
+{% else %}
+<p class="text-center mt-4">Böyle bir proje bulunamadı</p>
+{% endif %}
+{% endblock body %}
