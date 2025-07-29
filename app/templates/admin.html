@@ -1,72 +1,33 @@
 {% extends "layout.html" %}
 
-{% block title %}Proje Ekle - Admin{% endblock %}
+{% block title %}Admin Panel - Projeler{% endblock %}
 
 {% block body %}
-<div class="container mt-5">
-  <div class="card shadow-sm mx-auto" style="max-width: 700px;">
-    <div class="card-header bg-primary text-white">
-      <h2 class="mb-0">Yeni Proje Ekle</h2>
-    </div>
-    <div class="card-body">
-      
-      {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-          {% for category, message in messages %}
-            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-              {{ message }}
-              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-          {% endfor %}
-        {% endif %}
-      {% endwith %}
-      
-      <form method="POST" enctype="multipart/form-data" novalidate>
-        {{ form.hidden_tag() }}
+<div class="container mt-4">
 
-        <div class="mb-3">
-          {{ form.title.label(class="form-label fw-semibold") }}
-          {{ form.title(class="form-control form-control-lg", placeholder="Proje başlığı giriniz") }}
-          {% for error in form.title.errors %}
-            <div class="form-text text-danger">{{ error }}</div>
-          {% endfor %}
-        </div>
-
-        <div class="mb-3">
-          {{ form.description.label(class="form-label fw-semibold") }}
-          {{ form.description(class="form-control", rows="5", id="description-editor", placeholder="Proje açıklaması giriniz") }}
-          {% for error in form.description.errors %}
-            <div class="form-text text-danger">{{ error }}</div>
-          {% endfor %}
-        </div>
-
-        <div class="mb-3">
-          {{ form.github_link.label(class="form-label fw-semibold") }}
-          {{ form.github_link(class="form-control", placeholder="GitHub linki (isteğe bağlı)") }}
-          {% for error in form.github_link.errors %}
-            <div class="form-text text-danger">{{ error }}</div>
-          {% endfor %}
-        </div>
-
-        <div class="mb-4">
-          {{ form.image.label(class="form-label fw-semibold") }}
-          {{ form.image(class="form-control") }}
-          {% for error in form.image.errors %}
-            <div class="form-text text-danger">{{ error }}</div>
-          {% endfor %}
-        </div>
-
-        <button type="submit" class="btn btn-primary btn-lg w-100">
-          {{ form.submit.label.text if form.submit.label else 'Kaydet' }}
-        </button>
-      </form>
-
-    </div>
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Projeler</h2>
+    <a href="{{ url_for('add_project') }}" class="btn btn-success btn-lg">
+      Proje Ekle +
+    </a>
   </div>
+
+  {% if projects %}
+    <ul class="list-group">
+      {% for project in projects %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <a href="{{ url_for('edit_project', id=project.id) }}" class="text-decoration-none">
+            {{ project.title }}
+          </a>
+          <span>
+            <!-- İstersen projeyle ilgili başka kısa bilgiler ekleyebilirsin -->
+          </span>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>Henüz hiç proje eklenmemiş.</p>
+  {% endif %}
+
 </div>
-
-<script>
-  CKEDITOR.replace('description-editor');
-</script>
-
 {% endblock %}

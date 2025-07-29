@@ -13,6 +13,11 @@
         <li class="nav-item">
           <a class="nav-link{% if request.endpoint == 'about' %} active{% endif %}" href="{{ url_for('about') }}">Hakkımda</a>
         </li>
+        {% if is_admin %}
+        <li class="nav-item">
+          <a class="nav-link{% if request.endpoint == 'admin' %} active{% endif %}" href="{{ url_for('admin') }}">Admin</a>
+        </li>
+        {% endif %}
       </ul>
     </div>
   </div>
