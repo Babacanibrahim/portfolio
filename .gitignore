@@ -1,8 +1,28 @@
+# Python bytecode ve cache dosyaları
 __pycache__/
-*.pyc
-*.db
+*.py[cod]
+
+# Ortam dosyaları
 .env
-.vscode/
+.env.*
+
+# Sanal ortam klasörleri
+env/
+venv/
+.venv/
+
+# SQLite veritabanı dosyaları
+*.db
 *.sqlite3
+instance/
+
+# Upload klasörü (resimler, dosyalar vs.)
+static/uploads/
+
+# IDE ayar klasörleri
+.vscode/
+.idea/
+
+# Log ve veri dosyaları
 *.log
 data.json

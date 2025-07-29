@@ -1,13 +1,14 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
+from config import Config  # <-- config.py'den ayarları al
+import os
 
 db = SQLAlchemy()
 
 def create_app():
     app = Flask(__name__)
-    app.config['SECRET_KEY'] = 'portfolio'
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///portfolio.db'
+    app.config.from_object(Config)  # <-- Config sınıfından ayarları yükle
 
     db.init_app(app)
 
@@ -20,7 +21,7 @@ def create_app():
 
     with app.app_context():
         db.create_all() 
-    
+
     @app.context_processor
     def inject_current_year():
         return {'current_year': datetime.utcnow().year}
