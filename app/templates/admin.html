@@ -1,14 +1,25 @@
 {% extends "layout.html" %}
 
-{% block title %}Admin Panel - Projeler{% endblock %}
+{% block title %}Admin Panel{% endblock %}
 
 {% block body %}
 <div class="container mt-4">
 
   <div class="d-flex justify-content-between align-items-center mb-3">
-    <h2>Projeler</h2>
+    <h2>Admin Panel</h2>
     <div>
       <a href="{{ url_for('add_project') }}" class="btn btn-success btn-lg me-2">Proje Ekle +</a>
+
+      <a href="{{ url_for('messages') }}" class="btn btn-info btn-lg me-2 position-relative">
+        Mesajlar
+        {% if unread_message_count > 0 %}
+          <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+            {{ unread_message_count }}
+            <span class="visually-hidden">Okunmamış mesaj</span>
+          </span>
+        {% endif %}
+      </a>
+
       <a href="{{ url_for('logout') }}" class="btn btn-danger btn-lg">Çıkış Yap</a>
     </div>
   </div>

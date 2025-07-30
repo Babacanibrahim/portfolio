@@ -1,0 +1,26 @@
+{% extends "layout.html" %}
+
+{% block title %}Mesajlar{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+  <h2>Gelen Mesajlar</h2>
+
+  {% if messages %}
+    <ul class="list-group">
+      {% for msg in messages %}
+        <li class="list-group-item">
+          <strong>{{ msg.name }} ({{ msg.email }})</strong>
+          <br>
+          <small><em>{{ msg.created_at.strftime('%Y-%m-%d %H:%M') }}</em></small>
+          <p>{{ msg.content }}</p>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>Henüz mesaj yok.</p>
+  {% endif %}
+
+  <a href="{{ url_for('admin') }}" class="btn btn-secondary mt-3">Geri Dön</a>
+</div>
+{% endblock %}

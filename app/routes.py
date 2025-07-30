@@ -1,8 +1,8 @@
 from flask import (
     render_template, redirect, url_for, request,
-    flash, current_app, session, abort
+    flash, current_app, session
 )
-from .models import Project
+from .models import Project, Message
 from werkzeug.utils import secure_filename
 from .forms import AddProjectForm
 from . import db
@@ -18,6 +18,7 @@ def login_required(f):
             return redirect(url_for('login'))
         return f(*args, **kwargs)
     return decorated_function
+
 
 def register_routes(app):
 
@@ -38,6 +39,28 @@ def register_routes(app):
     def project_detail(id):
         project = Project.query.filter_by(id=id).first_or_404()
         return render_template('project_detail.html', project=project)
+    
+    # İletişim
+    @app.route('/contact', methods=['GET', 'POST'])
+    def contact():
+        if request.method == 'POST':
+            name = request.form.get('name')
+            email = request.form.get('email')
+            message = request.form.get('message')
+
+            if not name or not email or not message:
+                flash('Lütfen tüm alanları doldurun.', 'danger')
+                return redirect(url_for('contact'))
+
+            new_message = Message(name=name, email=email, content=message)
+            db.session.add(new_message)
+            db.session.commit()
+
+            flash('Mesajınız başarıyla gönderildi, teşekkürler!', 'success')
+            return redirect(url_for('contact'))
+
+        return render_template('contact.html')
+
 
     # --- LOGIN ---
     @app.route('/login', methods=['GET', 'POST'])
@@ -73,6 +96,16 @@ def register_routes(app):
     def admin():
         projects = Project.query.all()
         return render_template('admin.html', projects=projects)
+
+    # Mesajları görme (okundu işareti buradan kaldırıldı)
+    @app.route('/admin/messages')
+    @login_required
+    def messages():
+        messages = Message.query.order_by(Message.created_at.desc()).all()
+        for msg in messages:
+            msg.is_read = True
+        db.session.commit()
+        return render_template('messages.html', messages=messages)
 
     # --- PROJE EKLEME ---
     @app.route('/add_project', methods=['GET', 'POST'])
@@ -148,3 +181,9 @@ def register_routes(app):
     @app.context_processor
     def inject_is_admin():
         return dict(is_admin=session.get('admin_logged_in', False))
+    
+    # Mesaj sayısı bildirimi
+    @app.context_processor
+    def inject_globals():
+        unread_message_count = Message.query.filter_by(is_read=False).count()
+        return dict(is_admin=session.get("admin_logged_in", False), unread_message_count=unread_message_count)
