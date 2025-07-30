@@ -107,6 +107,20 @@ def register_routes(app):
         db.session.commit()
         return render_template('messages.html', messages=messages)
 
+    # --- MESAJ SİLME ---
+    @app.route("/delete_message/<int:id>", methods=["POST"])
+    @login_required
+    def delete_message(id):
+        message = Message.query.filter_by(id=id).first()
+        if message:
+            db.session.delete(message)
+            db.session.commit()
+            flash("Mesaj başarıyla silindi", "success")
+        else:
+            flash("Mesaj bulunamadı", "danger")
+        return redirect(url_for("messages"))
+
+
     # --- PROJE EKLEME ---
     @app.route('/add_project', methods=['GET', 'POST'])
     @login_required
