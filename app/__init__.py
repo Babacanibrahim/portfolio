@@ -1,14 +1,14 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
-from config import Config  # <-- config.py'den ayarları al
+from config import Config
 import os
 
 db = SQLAlchemy()
 
 def create_app():
     app = Flask(__name__)
-    app.config.from_object(Config)  # <-- Config sınıfından ayarları yükle
+    app.config.from_object(Config)
 
     db.init_app(app)
 
@@ -20,7 +20,7 @@ def create_app():
     register_routes(app)
 
     with app.app_context():
-        db.create_all() 
+        db.create_all()
 
     @app.context_processor
     def inject_current_year():

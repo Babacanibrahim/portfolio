@@ -1,4 +1,7 @@
-from flask import render_template, redirect, url_for, request, flash, current_app, Response
+from flask import (
+    render_template, redirect, url_for, request,
+    flash, current_app, session, abort
+)
 from .models import Project
 from werkzeug.utils import secure_filename
 from .forms import AddProjectForm
@@ -6,86 +9,83 @@ from . import db
 import os
 from functools import wraps
 
-#ADMİN GİRİŞİ
-def check_auth(username, password):
-    return username == current_app.config["ADMIN_USERNAME"] and password == current_app.config["ADMIN_PASSWORD"]
-
-def authenticate():
-    return Response(
-        'Erişim için giriş yapmalısınız.', 401,
-        {'WWW-Authenticate': 'Basic realm="Login Required"'}
-    )
-
-#DECORATORS
-def requires_auth(f):
+# Login decoratoru
+def login_required(f):
     @wraps(f)
-    def decorated(*args, **kwargs):
-        auth = request.authorization
-        if not auth or not check_auth(auth.username, auth.password):
-            return authenticate()
+    def decorated_function(*args, **kwargs):
+        if not session.get('admin_logged_in'):
+            flash("Lütfen giriş yapın.", "warning")
+            return redirect(url_for('login'))
         return f(*args, **kwargs)
-    return decorated
+    return decorated_function
 
-#ROUTES
 def register_routes(app):
 
-    @app.route("/")
+    @app.route('/')
     def index():
         projects = Project.query.order_by(Project.created_at.desc()).all()
-        return render_template("index.html", projects=projects)
+        return render_template('index.html', projects=projects)
 
-    @app.route("/about")
+    @app.route('/about')
     def about():
-        return render_template("about.html")
-
-    @app.route("/project_detail/<int:id>")
-    def project_detail(id):
-        project = Project.query.filter_by(id=id).first()
-        return render_template("project_detail.html", project=project)
-
-    # PROJE DÜZENLEME
-    @app.route("/edit_project/<int:id>", methods=["GET", "POST"])
-    @requires_auth
-    def edit_project(id):
-        project = Project.query.filter_by(id=id).first_or_404()
-        form = AddProjectForm()
-
-        if request.method == "POST" and form.validate():
-            project.title = form.title.data
-            project.description = form.description.data
-            project.github_link = form.github_link.data
-
-            # Resim güncelleme
-            if form.image.data:
-                image_file = form.image.data
-                filename = secure_filename(image_file.filename)
-                upload_path = os.path.join(current_app.config["UPLOAD_FOLDER"], filename)
-                image_file.save(upload_path)
-                project.image = filename
-
-            db.session.commit()
-            flash("Proje başarıyla güncellendi.", "success")
-            return redirect(url_for("admin"))
-
-        else:
-            # Formu mevcut proje verileriyle doldur
-            form.title.data = project.title
-            form.description.data = project.description
-            form.github_link.data = project.github_link
-
-        return render_template("edit_project.html", form=form, project = project)
+        return render_template('about.html')
     
-    # PROJE EKLEME
-    @app.route("/add_project", methods=["GET", "POST"])
-    @requires_auth
+    @app.route("/cv")
+    def cv():
+        return render_template("cv.html")
+
+    @app.route('/project_detail/<int:id>')
+    def project_detail(id):
+        project = Project.query.filter_by(id=id).first_or_404()
+        return render_template('project_detail.html', project=project)
+
+    # --- LOGIN ---
+    @app.route('/login', methods=['GET', 'POST'])
+    def login():
+        if session.get('admin_logged_in'):
+            return redirect(url_for('admin'))
+
+        if request.method == 'POST':
+            username = request.form.get('username')
+            password = request.form.get('password')
+
+            if (username == current_app.config['ADMIN_USERNAME'] and
+                password == current_app.config['ADMIN_PASSWORD']):
+                session['admin_logged_in'] = True
+                flash('Başarıyla giriş yapıldı.', 'success')
+                return redirect(url_for('admin'))
+            else:
+                flash('Kullanıcı adı veya şifre hatalı.', 'danger')
+
+        return render_template('login.html')
+
+    # ÇIKIŞ
+    @app.route('/logout')
+    @login_required
+    def logout():
+        session.pop('admin_logged_in', None)
+        flash('Çıkış yapıldı.', 'info')
+        return redirect(url_for('login'))
+
+    # --- ADMIN PANEL ---
+    @app.route('/admin')
+    @login_required
+    def admin():
+        projects = Project.query.all()
+        return render_template('admin.html', projects=projects)
+
+    # --- PROJE EKLEME ---
+    @app.route('/add_project', methods=['GET', 'POST'])
+    @login_required
     def add_project():
         form = AddProjectForm()
-        if request.method == "POST" and form.validate():
+        if form.validate_on_submit():
             filename = None
             if form.image.data:
                 image_file = form.image.data
                 filename = secure_filename(image_file.filename)
                 upload_path = os.path.join(current_app.config["UPLOAD_FOLDER"], filename)
+                os.makedirs(current_app.config["UPLOAD_FOLDER"], exist_ok=True)
                 image_file.save(upload_path)
 
             new_project = Project(
@@ -97,23 +97,41 @@ def register_routes(app):
             db.session.add(new_project)
             db.session.commit()
             flash("Proje başarıyla eklendi.", "success")
-            return redirect(url_for("add_project"))
+            return redirect(url_for('admin'))
 
-        return render_template("add_project.html", form=form)
-    
+        return render_template('add_project.html', form=form)
 
-    #ADMİN SAYFASI
-    @app.route("/admin", methods = ["GET","POST"])
-    def admin ():
-        projects = Project.query.all()
+    # --- PROJE DÜZENLEME ---
+    @app.route('/edit_project/<int:id>', methods=['GET', 'POST'])
+    @login_required
+    def edit_project(id):
+        project = Project.query.filter_by(id=id).first_or_404()
+        form = AddProjectForm(obj=project)
 
-        return render_template("admin.html", projects = projects)
-    
-    # Proje Silme
-    @app.route("/delete/<int:id>", methods =["POST"])
-    @requires_auth
+        if form.validate_on_submit():
+            project.title = form.title.data
+            project.description = form.description.data
+            project.github_link = form.github_link.data
+
+            if form.image.data:
+                image_file = form.image.data
+                filename = secure_filename(image_file.filename)
+                upload_path = os.path.join(current_app.config["UPLOAD_FOLDER"], filename)
+                os.makedirs(current_app.config["UPLOAD_FOLDER"], exist_ok=True)
+                image_file.save(upload_path)
+                project.image = filename
+
+            db.session.commit()
+            flash("Proje başarıyla güncellendi.", "success")
+            return redirect(url_for('admin'))
+
+        return render_template('edit_project.html', form=form, project=project)
+
+    # --- PROJE SİLME ---
+    @app.route('/delete/<int:id>', methods=['POST'])
+    @login_required
     def delete(id):
-        project = Project.query.filter_by(id = id).first()
+        project = Project.query.filter_by(id=id).first()
         if project:
             if project.image:
                 image_path = os.path.join(current_app.config["UPLOAD_FOLDER"], project.image)
@@ -121,15 +139,12 @@ def register_routes(app):
                     os.remove(image_path)
             db.session.delete(project)
             db.session.commit()
-            flash("Proje başarıyla silindi","success")
+            flash("Proje başarıyla silindi", "success")
         else:
             flash("Proje bulunamadı", "danger")
-        return redirect(url_for("admin"))
-    
-    #CONTEXT PROCESSOR
+        return redirect(url_for('admin'))
+
+    # --- CONTEXT PROCESSOR ---
     @app.context_processor
     def inject_is_admin():
-        auth = request.authorization
-        if auth and auth.username == current_app.config["ADMIN_USERNAME"] and auth.password == current_app.config["ADMIN_PASSWORD"]:
-            return dict(is_admin=True)
-        return dict(is_admin=False)
+        return dict(is_admin=session.get('admin_logged_in', False))
