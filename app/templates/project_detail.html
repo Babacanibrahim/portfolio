@@ -5,20 +5,31 @@
 {% if project %}
 
 <div class="card mb-3 shadow-sm">
+  <!-- Kapak Fotoğrafı -->
   {% if project.image %}
-  <img src="{{ url_for('static', filename='uploads/' + project.image) }}" class="card-img-top"
-    alt="{{ project.title }}">
+    <img id="main-image" src="{{ url_for('static', filename='uploads/' + project.image) }}" class="card-img-top" alt="{{ project.title }}">
   {% else %}
-  <img src="{{ url_for('static', filename='images/default_project.jpg') }}" class="card-img-top"
-    alt="Varsayılan Proje Görseli">
+    <img id="main-image" src="{{ url_for('static', filename='images/default_project.jpg') }}" class="card-img-top" alt="Varsayılan Proje Görseli">
   {% endif %}
+
   <div class="card-body">
     <h5 class="card-title">{{ project.title }}</h5>
-    <p class="card-text">
-      {{ project.description |safe }}
-    </p>
-
+    <p class="card-text">{{ project.description | safe }}</p>
     <p class="card-text"><small class="text-muted">{{ project.created_at.strftime('%d %b %Y, %H:%M') }}</small></p>
+
+    <!-- Galeri küçük resimler -->
+    {% if project.images %}
+    <div class="gallery-thumbnails d-flex flex-wrap gap-2 mt-3">
+      {% for img in project.images %}
+      <img src="{{ url_for('static', filename='uploads/' + img.filename) }}" 
+           alt="Galeri Fotoğrafı"
+           style="width: 100px; height: 70px; object-fit: cover; cursor: pointer; border: 2px solid transparent;"
+           onclick="document.getElementById('main-image').src=this.src;"
+           onmouseover="this.style.borderColor='#0d6efd';"
+           onmouseout="this.style.borderColor='transparent';">
+      {% endfor %}
+    </div>
+    {% endif %}
   </div>
 </div>
 

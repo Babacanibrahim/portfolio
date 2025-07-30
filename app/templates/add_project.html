@@ -9,7 +9,7 @@
       <h2 class="mb-0">Yeni Proje Ekle</h2>
     </div>
     <div class="card-body">
-      
+
       {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
           {% for category, message in messages %}
@@ -20,7 +20,7 @@
           {% endfor %}
         {% endif %}
       {% endwith %}
-      
+
       <form method="POST" enctype="multipart/form-data" novalidate>
         {{ form.hidden_tag() }}
 
@@ -52,6 +52,14 @@
           {{ form.image.label(class="form-label fw-semibold") }}
           {{ form.image(class="form-control") }}
           {% for error in form.image.errors %}
+            <div class="form-text text-danger">{{ error }}</div>
+          {% endfor %}
+        </div>
+
+        <div class="mb-4">
+          {{ form.gallery.label(class="form-label fw-semibold") }}
+          {{ form.gallery(class="form-control", multiple=true) }}
+          {% for error in form.gallery.errors %}
             <div class="form-text text-danger">{{ error }}</div>
           {% endfor %}
         </div>

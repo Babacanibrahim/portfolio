@@ -2,7 +2,7 @@ from flask import (
     render_template, redirect, url_for, request,
     flash, current_app, session
 )
-from .models import Project, Message
+from .models import Project, Message, ProjectImage
 from werkzeug.utils import secure_filename
 from .forms import AddProjectForm
 from . import db
@@ -143,10 +143,24 @@ def register_routes(app):
             )
             db.session.add(new_project)
             db.session.commit()
+
+            # Çoklu galeri fotoğraflarını kaydet
+            if form.gallery.data:
+                for file_storage in form.gallery.data:
+                    if file_storage:
+                        gallery_filename = secure_filename(file_storage.filename)
+                        gallery_path = os.path.join(current_app.config["UPLOAD_FOLDER"], gallery_filename)
+                        file_storage.save(gallery_path)
+
+                        project_image = ProjectImage(filename=gallery_filename, project_id=new_project.id)
+                        db.session.add(project_image)
+                db.session.commit()
+
             flash("Proje başarıyla eklendi.", "success")
             return redirect(url_for('admin'))
 
         return render_template('add_project.html', form=form)
+
 
     # --- PROJE DÜZENLEME ---
     @app.route('/edit_project/<int:id>', methods=['GET', 'POST'])
@@ -160,6 +174,7 @@ def register_routes(app):
             project.description = form.description.data
             project.github_link = form.github_link.data
 
+            # Kapak fotoğrafı güncelleme
             if form.image.data:
                 image_file = form.image.data
                 filename = secure_filename(image_file.filename)
@@ -168,11 +183,21 @@ def register_routes(app):
                 image_file.save(upload_path)
                 project.image = filename
 
+            # Galeri fotoğrafları ekle (varsa)
+            if form.gallery.data:
+                for gallery_file in form.gallery.data:
+                    gallery_filename = secure_filename(gallery_file.filename)
+                    gallery_path = os.path.join(current_app.config["UPLOAD_FOLDER"], gallery_filename)
+                    gallery_file.save(gallery_path)
+                    new_img = ProjectImage(filename=gallery_filename, project=project)
+                    db.session.add(new_img)
+
             db.session.commit()
             flash("Proje başarıyla güncellendi.", "success")
             return redirect(url_for('admin'))
 
         return render_template('edit_project.html', form=form, project=project)
+
 
     # --- PROJE SİLME ---
     @app.route('/delete/<int:id>', methods=['POST'])
@@ -180,16 +205,25 @@ def register_routes(app):
     def delete(id):
         project = Project.query.filter_by(id=id).first()
         if project:
+            # Kapak fotoğrafını sil
             if project.image:
                 image_path = os.path.join(current_app.config["UPLOAD_FOLDER"], project.image)
                 if os.path.exists(image_path):
                     os.remove(image_path)
+            # Galeri fotoğraflarını sil
+            for img in project.images:
+                gallery_path = os.path.join(current_app.config["UPLOAD_FOLDER"], img.filename)
+                if os.path.exists(gallery_path):
+                    os.remove(gallery_path)
+                db.session.delete(img)
+
             db.session.delete(project)
             db.session.commit()
             flash("Proje başarıyla silindi", "success")
         else:
             flash("Proje bulunamadı", "danger")
         return redirect(url_for('admin'))
+
 
     # --- CONTEXT PROCESSOR ---
     @app.context_processor

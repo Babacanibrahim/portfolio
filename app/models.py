@@ -1,7 +1,6 @@
 from . import db
 from datetime import datetime
 
-
 class Project(db.Model):
     id = db.Column(db.Integer, primary_key = True)
     title = db.Column(db.String, nullable = False)
@@ -9,7 +8,12 @@ class Project(db.Model):
     github_link = db.Column(db.String)
     created_at = db.Column(db.DateTime, default=db.func.now())
     image = db.Column(db.String)
+    images = db.relationship('ProjectImage', backref='project', lazy=True)
 
+class ProjectImage(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    filename = db.Column(db.String, nullable=False)
+    project_id = db.Column(db.Integer, db.ForeignKey('project.id'), nullable=False)
 
 class Message(db.Model):
     id = db.Column(db.Integer, primary_key=True)

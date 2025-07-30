@@ -1,13 +1,12 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, TextAreaField, SubmitField
-from flask_wtf.file import FileField, FileAllowed, FileRequired
-from wtforms.validators import DataRequired, URL, Optional
+from flask_wtf.file import FileField, FileAllowed, MultipleFileField
+from wtforms.validators import DataRequired
 
 class AddProjectForm(FlaskForm):
-    title = StringField("Proje Başlığı",validators=[DataRequired(message="Proje başlığı gerekli")])
-    description = TextAreaField("Proje Açıklaması", validators=[DataRequired()])
-    github_link = StringField("GitHub Linki", validators=[Optional(), URL()])
-    image = FileField("Proje Görseli", validators=[
-        FileAllowed(['jpg', 'png', 'jpeg'], 'Sadece resim dosyaları yüklenebilir!')
-    ])
-    submit = SubmitField("Kaydet")
+    title = StringField('Başlık', validators=[DataRequired()])
+    description = TextAreaField('Açıklama', validators=[DataRequired()])
+    github_link = StringField('GitHub Linki')
+    image = FileField('Kapak Fotoğrafı', validators=[FileAllowed(['jpg', 'png', 'jpeg'], 'Sadece resim dosyaları!')])
+    gallery = MultipleFileField('Galeri Fotoğrafları', validators=[FileAllowed(['jpg', 'png', 'jpeg'], 'Sadece resim dosyaları!')])
+    submit = SubmitField('Kaydet')

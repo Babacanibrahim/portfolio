@@ -9,7 +9,7 @@
       <h2 class="mb-0">Projeyi Güncelle</h2>
     </div>
     <div class="card-body">
-      
+
       {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
           {% for category, message in messages %}
@@ -20,8 +20,7 @@
           {% endfor %}
         {% endif %}
       {% endwith %}
-      
-      <!-- Güncelleme Formu -->
+
       <form method="POST" enctype="multipart/form-data" novalidate>
         {{ form.hidden_tag() }}
 
@@ -55,6 +54,30 @@
           {% for error in form.image.errors %}
             <div class="form-text text-danger">{{ error }}</div>
           {% endfor %}
+          {% if project.image %}
+            <div class="mt-2">
+              <img src="{{ url_for('static', filename='uploads/' + project.image) }}" alt="Kapak Fotoğrafı" style="max-width: 200px;">
+            </div>
+          {% endif %}
+        </div>
+
+        <div class="mb-4">
+          {{ form.gallery.label(class="form-label fw-semibold") }}
+          {{ form.gallery(class="form-control", multiple=true) }}
+          {% for error in form.gallery.errors %}
+            <div class="form-text text-danger">{{ error }}</div>
+          {% endfor %}
+
+          {% if project.images %}
+            <div class="mt-3 d-flex flex-wrap gap-2">
+              {% for img in project.images %}
+                <div style="position: relative;">
+                  <img src="{{ url_for('static', filename='uploads/' + img.filename) }}" alt="Galeri Fotoğrafı" style="max-width: 120px; border-radius: 6px; box-shadow: 0 0 5px #ccc;">
+                  <!-- İstersen buraya silme butonu da ekleyebilirsin -->
+                </div>
+              {% endfor %}
+            </div>
+          {% endif %}
         </div>
 
         <button type="submit" class="btn btn-primary btn-lg w-100">
@@ -64,10 +87,8 @@
 
       <!-- Silme Formu -->
       <form method="POST" action="{{ url_for('delete', id=project.id) }}" onsubmit="return confirm('Projeyi silmek istediğinize emin misiniz?');" class="mt-3">
-  {{ form.hidden_tag() }}
-  <button type="submit" class="btn btn-danger w-100">Projeyi Sil</button>
-</form>
-
+        <button type="submit" class="btn btn-danger w-100">Projeyi Sil</button>
+      </form>
 
     </div>
   </div>
