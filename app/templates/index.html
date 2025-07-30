@@ -4,23 +4,30 @@
 {% block body %}
 {% if projects %}
 {% for project in projects %}
-<div class="card mb-3 shadow-sm">
+<div class="card mb-4 shadow-sm">
   {% if project.image %}
-  <a href="{{url_for ('project_detail', id = project.id)}}"><img src="{{ url_for('static', filename='uploads/' + project.image) }}" class="card-img-top"
-    alt="{{ project.title }}"></a>
-  
+  <a href="{{ url_for('project_detail', id=project.id) }}">
+    <img src="{{ url_for('static', filename='uploads/' + project.image) }}"
+         class="card-img-top"
+         alt="{{ project.title }}"
+         style="max-height: 300px; object-fit: cover; border: 2px solid #010101ff; border-radius: 10px;">
+  </a>
   {% else %}
-  <a href="{{url_for ('project_detail', id = project.id)}}"><img src="{{ url_for('static', filename='images/default_project.jpg') }}" class="card-img-top"
-    alt="Varsayılan Proje Görseli"></a>
-  
+  <a href="{{ url_for('project_detail', id=project.id) }}">
+    <img src="{{ url_for('static', filename='images/default_project.jpg') }}"
+         class="card-img-top"
+         alt="Varsayılan Proje Görseli"
+         style="max-height: 300px; object-fit: cover; border: 2px solid #000000ff; border-radius: 10px;">
+  </a>
   {% endif %}
+  
   <div class="card-body">
-  <a href="{{url_for ('project_detail', id = project.id)}}"><h5 class="card-title">{{ project.title }}</h5></a>
-    
+    <a href="{{ url_for('project_detail', id=project.id) }}">
+      <h5 class="card-title">{{ project.title }}</h5>
+    </a>
     <p class="card-text">
       {{ project.description | striptags | truncate(150, True, '...') }}
     </p>
-
     <p class="card-text"><small class="text-muted">{{ project.created_at.strftime('%d %b %Y, %H:%M') }} tarihinde eklendi</small></p>
   </div>
 </div>
