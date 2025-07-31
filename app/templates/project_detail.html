@@ -3,48 +3,91 @@
 
 {% block body %}
 {% if project %}
-<div class="card mb-3 shadow-sm p-3" style="border-radius: 12px;">
-  <!-- Kapak Fotoğrafı -->
-  {% if project.image %}
-    <div style="overflow: hidden; border-radius: 10px; border: 2px solid #060606;">
-      <img id="main-image" 
-           src="{{ url_for('static', filename='uploads/' + project.image) }}" 
-           class="card-img-top" 
-           alt="{{ project.title }}"
-           style="max-height: 450px; object-fit: contain; width: 100%;">
-    </div>
-  {% else %}
-    <div style="overflow: hidden; border-radius: 10px; border: 2px solid #020202;">
-      <img id="main-image" 
-           src="{{ url_for('static', filename='images/default_project.jpg') }}" 
-           class="card-img-top"
-           alt="Varsayılan Proje Görseli"
-           style="max-height: 450px; object-fit: contain; width: 100%;">
-    </div>
-  {% endif %}
+<div class="row g-4">
+  <!-- Sol Sütun: Galeri Thumbnails + Kapak Fotoğrafı -->
+  <div class="col-md-3">
+    <div class="d-flex flex-column gap-3">
+      {# Kapak fotoğrafı küçük resim olarak #}
+      {% if project.image %}
+      <img src="{{ url_for('static', filename='uploads/' + project.image) }}"
+           alt="Kapak Fotoğrafı"
+           id="cover-thumb"
+           class="thumbnail-img"
+           style="cursor: pointer; border: 3px solid #0d6efd; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.15);"
+           onclick="setMainImage(this.src)">
+      {% endif %}
 
-  <div class="card-body">
-    <h5 class="card-title">{{ project.title }}</h5>
-    <p class="card-text">{{ project.description | safe }}</p>
-    <p class="card-text"><small class="text-muted">{{ project.created_at.strftime('%d %b %Y, %H:%M') }}</small></p>
-
-    <!-- Galeri küçük resimler -->
-    {% if project.images %}
-    <div class="gallery-thumbnails d-flex flex-wrap gap-2 mt-3">
+      {# Galeri diğer fotoğraflar #}
       {% for img in project.images %}
-      <img src="{{ url_for('static', filename='uploads/' + img.filename) }}" 
+      <img src="{{ url_for('static', filename='uploads/' + img.filename) }}"
            alt="Galeri Fotoğrafı"
-           style="width: 100px; height: 70px; object-fit: cover; cursor: pointer; 
-                  border: 3px solid #adb5bd; border-radius: 6px;
-                  box-shadow: 0 2px 6px rgba(0,0,0,0.15);"
-           onclick="document.getElementById('main-image').src=this.src;"
-           onmouseover="this.style.borderColor='#0d6efd';"
-           onmouseout="this.style.borderColor='#adb5bd';">
+           class="thumbnail-img"
+           style="cursor: pointer; border: 3px solid #adb5bd; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.15);"
+           onclick="setMainImage(this.src)">
       {% endfor %}
     </div>
-    {% endif %}
+  </div>
+
+  <!-- Sağ Sütun: Proje İçeriği -->
+  <div class="col-md-9">
+    <div class="card shadow-sm p-3" style="border-radius: 12px;">
+      <!-- Kapak Fotoğrafı Ana Görsel -->
+      {% if project.image %}
+      <div style="overflow: hidden; border-radius: 10px; border: 2px solid #060606;">
+        <img id="main-image"
+             src="{{ url_for('static', filename='uploads/' + project.image) }}"
+             class="card-img-top"
+             alt="{{ project.title }}"
+             style="max-height: 450px; object-fit: contain; width: 100%;">
+      </div>
+      {% else %}
+      <div style="overflow: hidden; border-radius: 10px; border: 2px solid #020202;">
+        <img id="main-image"
+             src="{{ url_for('static', filename='images/default_project.jpg') }}"
+             class="card-img-top"
+             alt="Varsayılan Proje Görseli"
+             style="max-height: 450px; object-fit: contain; width: 100%;">
+      </div>
+      {% endif %}
+
+      <div class="card-body">
+        <h5 class="card-title">{{ project.title }}</h5>
+        <p class="card-text">{{ project.description | safe }}</p>
+        <p class="card-text"><small class="text-muted">{{ project.created_at.strftime('%d %b %Y, %H:%M') }}</small></p>
+      </div>
+    </div>
   </div>
 </div>
+
+<script>
+  const mainImage = document.getElementById('main-image');
+  const thumbnails = document.querySelectorAll('.thumbnail-img');
+
+  // Başlangıçta ana görsel ile eşleşen thumbnailı seçili yap
+  function setActiveThumbnail(src) {
+    thumbnails.forEach(img => {
+      if (img.src === src) {
+        img.style.borderColor = '#0d6efd';
+        img.style.boxShadow = '0 2px 12px rgba(13,110,253,0.7)';
+      } else {
+        img.style.borderColor = '#adb5bd';
+        img.style.boxShadow = '0 2px 6px rgba(0,0,0,0.15)';
+      }
+    });
+  }
+
+  // Ana görseli değiştir ve aktif thumbnail'ı güncelle
+  function setMainImage(src) {
+    mainImage.src = src;
+    setActiveThumbnail(src);
+  }
+
+  // Sayfa yüklendiğinde kapak fotoğrafı aktif olsun
+  window.addEventListener('load', () => {
+    setActiveThumbnail(mainImage.src);
+  });
+</script>
+
 {% else %}
 <p class="text-center mt-4">Böyle bir proje bulunamadı</p>
 {% endif %}

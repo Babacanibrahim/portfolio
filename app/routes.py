@@ -175,28 +175,43 @@ def register_routes(app):
             project.github_link = form.github_link.data
 
             # Kapak fotoğrafı güncelleme
-            if form.image.data:
-                image_file = form.image.data
+            image_file = form.image.data
+            if image_file and hasattr(image_file, 'filename') and image_file.filename:
                 filename = secure_filename(image_file.filename)
                 upload_path = os.path.join(current_app.config["UPLOAD_FOLDER"], filename)
                 os.makedirs(current_app.config["UPLOAD_FOLDER"], exist_ok=True)
                 image_file.save(upload_path)
                 project.image = filename
 
-            # Galeri fotoğrafları ekle (varsa)
+            # Galeri fotoğraflarını silme
+            delete_ids = request.form.getlist('delete_images')
+            if delete_ids:
+                for img_id in delete_ids:
+                    img = ProjectImage.query.get(int(img_id))
+                    if img:
+                        image_path = os.path.join(current_app.config["UPLOAD_FOLDER"], img.filename)
+                        if os.path.exists(image_path):
+                            os.remove(image_path)
+                        db.session.delete(img)
+
+            # Yeni galeri fotoğraflarını ekleme
             if form.gallery.data:
                 for gallery_file in form.gallery.data:
-                    gallery_filename = secure_filename(gallery_file.filename)
-                    gallery_path = os.path.join(current_app.config["UPLOAD_FOLDER"], gallery_filename)
-                    gallery_file.save(gallery_path)
-                    new_img = ProjectImage(filename=gallery_filename, project=project)
-                    db.session.add(new_img)
+                    if gallery_file and hasattr(gallery_file, 'filename') and gallery_file.filename:
+                        gallery_filename = secure_filename(gallery_file.filename)
+                        gallery_path = os.path.join(current_app.config["UPLOAD_FOLDER"], gallery_filename)
+                        os.makedirs(current_app.config["UPLOAD_FOLDER"], exist_ok=True)
+                        gallery_file.save(gallery_path)
+                        new_img = ProjectImage(filename=gallery_filename, project=project)
+                        db.session.add(new_img)
 
             db.session.commit()
             flash("Proje başarıyla güncellendi.", "success")
             return redirect(url_for('admin'))
 
+        # Form GET isteğinde doldurulur, ama project.images güncel hali ile render edilir
         return render_template('edit_project.html', form=form, project=project)
+
 
 
     # --- PROJE SİLME ---
