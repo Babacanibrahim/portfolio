@@ -1,7 +1,32 @@
 <aside class="bg-light border p-3" style="min-width: 200px;">
+
+  <!-- Kendini tanıtan kart -->
+  <div class="card mb-4 text-center shadow-sm" style="border-radius: 12px;">
+    <div class="card-body">
+      <a href="{{ url_for('about') }}" class="d-block mb-3" title="Hakkımda Sayfasına Git">
+        <img alt="İbrahim Babacan" 
+             src="https://github.com/babacanibrahim.png" 
+             class="rounded-circle" 
+             style="width: 100px; height: 100px; object-fit: cover; margin: auto;">
+      </a>
+      <h5 class="card-title mb-1">İbrahim Babacan</h5>
+      <p class="text-muted mb-2">Bilgisayar Mühendisi & Yazılım Geliştirici</p>
+      
+      <p class="small text-secondary mb-3"> 
+        Daha detaylı bilgi için <a href="{{ url_for('about') }}">Hakkımda</a> sayfasını ziyaret edebilir,  
+        kariyerime ve yeteneklerime dair kapsamlı bilgi alabilirsin.
+      </p>
+      
+      <a href="mailto:babacan-1907@outlook.com.tr" class="btn btn-sm btn-outline-primary w-100 mb-2" title="E-posta Gönder">E-posta Gönder</a>
+      <a href="https://github.com/babacanibrahim" target="_blank" class="btn btn-sm btn-dark w-100 mb-2" title="GitHub Profili">GitHub</a>
+      <a href="{{ url_for('cv') }}" class="btn btn-sm btn-primary w-100" title="CV'yi Görüntüle">CV'ye Bak</a>
+    </div>
+  </div>
+
+  <!-- Öne çıkan projeler -->
   <h5>Öne Çıkan Projeler</h5>
   <ul class="list-unstyled">
-    <li><a href="{{ url_for('project_detail', id=3) }}" target="blank" class="text-decoration-none">Kişisel Finans Takip Uygulaması</a></li>
+    <li><a href="{{ url_for('project_detail', id=3) }}" target="_blank" class="text-decoration-none">Kişisel Finans Takip Uygulaması</a></li>
     <li><a href="#" class="text-decoration-none">Django Makale Uygulaması</a></li>
     <li><a href="#" class="text-decoration-none">Basit Kütüphane Uygulaması</a></li>
   </ul>

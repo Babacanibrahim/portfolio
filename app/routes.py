@@ -48,7 +48,7 @@ def register_routes(app):
             email = request.form.get('email')
             message = request.form.get('message')
 
-            if not name or not email or not message:
+            if not name or not message:
                 flash('Lütfen tüm alanları doldurun.', 'danger')
                 return redirect(url_for('contact'))
 

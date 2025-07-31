@@ -1,94 +1,102 @@
 {% extends "layout.html" %}
 {% block title %}Proje Detayları{% endblock title %}
 
+
 {% block body %}
-{% if project %}
-<div class="row g-4">
-  <!-- Sol Sütun: Galeri Thumbnails + Kapak Fotoğrafı -->
-  <div class="col-md-3">
-    <div class="d-flex flex-column gap-3">
-      {# Kapak fotoğrafı küçük resim olarak #}
-      {% if project.image %}
-      <img src="{{ url_for('static', filename='uploads/' + project.image) }}"
-           alt="Kapak Fotoğrafı"
-           id="cover-thumb"
-           class="thumbnail-img"
-           style="cursor: pointer; border: 3px solid #0d6efd; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.15);"
-           onclick="setMainImage(this.src)">
-      {% endif %}
-
-      {# Galeri diğer fotoğraflar #}
-      {% for img in project.images %}
-      <img src="{{ url_for('static', filename='uploads/' + img.filename) }}"
-           alt="Galeri Fotoğrafı"
-           class="thumbnail-img"
-           style="cursor: pointer; border: 3px solid #adb5bd; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.15);"
-           onclick="setMainImage(this.src)">
-      {% endfor %}
+<div class="container mt-4 mb-5">
+  <div class="row">
+    <!-- Thumbnail Galeri -->
+    <div class="col-md-3">
+      <div class="d-flex flex-column gap-3">
+        {% if project.image %}
+        <img src="{{ url_for('static', filename='uploads/' + project.image) }}"
+             alt="Kapak Fotoğrafı"
+             class="thumbnail-img"
+             data-index="0"
+             style="cursor: pointer; border: 3px solid #0d6efd; border-radius: 6px;"
+             onclick="updateMainImage(this)">
+        {% endif %}
+        {% for img in project.images %}
+        <img src="{{ url_for('static', filename='uploads/' + img.filename) }}"
+             alt="Galeri Fotoğrafı"
+             class="thumbnail-img"
+             data-index="{{ loop.index }}"
+             style="cursor: pointer; border: 3px solid #adb5bd; border-radius: 6px;"
+             onclick="updateMainImage(this)">
+        {% endfor %}
+      </div>
     </div>
-  </div>
 
-  <!-- Sağ Sütun: Proje İçeriği -->
-  <div class="col-md-9">
-    <div class="card shadow-sm p-3" style="border-radius: 12px;">
-      <!-- Kapak Fotoğrafı Ana Görsel -->
-      {% if project.image %}
-      <div style="overflow: hidden; border-radius: 10px; border: 2px solid #060606;">
-        <img id="main-image"
-             src="{{ url_for('static', filename='uploads/' + project.image) }}"
-             class="card-img-top"
-             alt="{{ project.title }}"
-             style="max-height: 450px; object-fit: contain; width: 100%;">
-      </div>
-      {% else %}
-      <div style="overflow: hidden; border-radius: 10px; border: 2px solid #020202;">
-        <img id="main-image"
-             src="{{ url_for('static', filename='images/default_project.jpg') }}"
-             class="card-img-top"
-             alt="Varsayılan Proje Görseli"
-             style="max-height: 450px; object-fit: contain; width: 100%;">
-      </div>
-      {% endif %}
-
-      <div class="card-body">
-        <h5 class="card-title">{{ project.title }}</h5>
-        <p class="card-text">{{ project.description | safe }}</p>
-        <p class="card-text"><small class="text-muted">{{ project.created_at.strftime('%d %b %Y, %H:%M') }}</small></p>
+    <!-- Main Image -->
+    <div class="col-md-9">
+      <div class="card shadow-sm p-3" style="border-radius: 12px;">
+        <div style="overflow: hidden; border-radius: 10px; border: 2px solid #060606;">
+          <img id="main-image"
+               src="{{ url_for('static', filename='uploads/' + (project.image if project.image else 'images/default_project.jpg')) }}"
+               class="card-img-top"
+               alt="{{ project.title }}"
+               style="max-height: 450px; object-fit: contain; width: 100%; cursor: pointer;"
+               data-bs-toggle="modal"
+               data-bs-target="#galleryModal">
+        </div>
+        <div class="card-body">
+          <h5 class="card-title">{{ project.title }}</h5>
+          <p class="card-text">{{ project.description | safe }}</p>
+        </div>
       </div>
     </div>
   </div>
 </div>
 
+<!-- Modal: Galeri -->
+<div class="modal fade" id="galleryModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-centered">
+    <div class="modal-content bg-dark">
+      <div class="modal-body p-0">
+        <div id="carouselGallery" class="carousel slide" data-bs-ride="carousel">
+          <div class="carousel-inner">
+            {% if project.image %}
+            <div class="carousel-item active">
+              <img src="{{ url_for('static', filename='uploads/' + project.image) }}"
+                   class="d-block w-100" style="object-fit: contain; max-height: 90vh;" alt="Kapak Fotoğrafı">
+            </div>
+            {% endif %}
+            {% for img in project.images %}
+            <div class="carousel-item">
+              <img src="{{ url_for('static', filename='uploads/' + img.filename) }}"
+                   class="d-block w-100" style="object-fit: contain; max-height: 90vh;" alt="Galeri Fotoğrafı">
+            </div>
+            {% endfor %}
+          </div>
+          <button class="carousel-control-prev" type="button" data-bs-target="#carouselGallery" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon"></span>
+          </button>
+          <button class="carousel-control-next" type="button" data-bs-target="#carouselGallery" data-bs-slide="next">
+            <span class="carousel-control-next-icon"></span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Script -->
 <script>
-  const mainImage = document.getElementById('main-image');
-  const thumbnails = document.querySelectorAll('.thumbnail-img');
+  let currentMainIndex = 0;
 
-  // Başlangıçta ana görsel ile eşleşen thumbnailı seçili yap
-  function setActiveThumbnail(src) {
-    thumbnails.forEach(img => {
-      if (img.src === src) {
-        img.style.borderColor = '#0d6efd';
-        img.style.boxShadow = '0 2px 12px rgba(13,110,253,0.7)';
-      } else {
-        img.style.borderColor = '#adb5bd';
-        img.style.boxShadow = '0 2px 6px rgba(0,0,0,0.15)';
-      }
-    });
+  function updateMainImage(img) {
+    const mainImage = document.getElementById('main-image');
+    mainImage.src = img.src;
+    currentMainIndex = parseInt(img.getAttribute('data-index'));
   }
 
-  // Ana görseli değiştir ve aktif thumbnail'ı güncelle
-  function setMainImage(src) {
-    mainImage.src = src;
-    setActiveThumbnail(src);
-  }
+  const galleryModal = document.getElementById('galleryModal');
+  const carousel = new bootstrap.Carousel(document.getElementById('carouselGallery'), {
+    interval: false
+  });
 
-  // Sayfa yüklendiğinde kapak fotoğrafı aktif olsun
-  window.addEventListener('load', () => {
-    setActiveThumbnail(mainImage.src);
+  galleryModal.addEventListener('shown.bs.modal', function () {
+    setTimeout(() => carousel.to(currentMainIndex), 150);
   });
 </script>
-
-{% else %}
-<p class="text-center mt-4">Böyle bir proje bulunamadı</p>
-{% endif %}
-{% endblock body %}
+{% endblock %}
